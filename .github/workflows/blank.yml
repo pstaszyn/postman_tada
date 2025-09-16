@@ -1,0 +1,42 @@
+name: API Tests (Newman -> HTML)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch: 
+
+jobs:
+  run-api-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Newman and HTML reporter
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+
+      - name: Create reports folder
+        run: mkdir -p reports
+
+      - name: Run Postman tests and export HTML report
+  
+        run: |
+          newman run tada.json \
+          -e env.json \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export reports/results.html
+
+      - name: Upload HTML report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-html-report
+          path: reports/results.html
